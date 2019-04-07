@@ -1,0 +1,2 @@
+errno.o: errno.c
+open.o: open.c ../include/linus/unistd.h ../include/stdarg.h

@@ -1,0 +1,23 @@
+irq.o: irq.c ../include/linus/types.h ../include/asm/irq.h \
+ ../include/linus/segment.h ../include/linus/linkage.h \
+ ../include/asm/system.h ../include/linus/head.h \
+ ../include/linus/ptrace.h ../include/linus/signal.h
+mem.o: mem.c ../include/linus/tty.h ../include/linus/fs.h \
+ ../include/linus/types.h
+panic.o: panic.c ../include/stdarg.h ../include/linus/printk.h \
+ ../include/linus/linkage.h ../include/linus/types.h \
+ ../include/linus/kernel.h ../include/linus/vsprintf.h
+printk.o: printk.c ../include/linus/linkage.h ../include/linus/types.h \
+ ../include/linus/vsprintf.h ../include/stdarg.h \
+ ../include/linus/console.h ../include/linus/printk.h
+sched.o: sched.c ../include/linus/types.h ../include/linus/sched.h \
+ ../include/linus/head.h ../include/linus/fs.h ../include/linus/tasks.h \
+ ../include/linus/math_emu.h ../include/linus/linkage.h \
+ ../include/asm/system.h ../include/linus/segment.h \
+ ../include/linus/sys.h ../include/linus/ptrace.h \
+ ../include/linus/kernel.h
+string.o: string.c ../include/linus/types.h
+traps.o: traps.c ../include/linus/head.h ../include/linus/types.h \
+ ../include/linus/linkage.h ../include/asm/system.h \
+ ../include/linus/segment.h
+vsprintf.o: vsprintf.c ../include/linus/vsprintf.h ../include/stdarg.h

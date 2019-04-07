@@ -1,0 +1,10 @@
+console.o: console.c ../../include/linus/string.h \
+ ../../include/linus/types.h ../../include/linus/stddef.h \
+ ../../include/linus/selection.h ../../include/linus/console.h \
+ ../../include/linus/console_struct.h ../../include/linus/tty.h \
+ ../../include/linus/fs.h ../../include/linus/printk.h \
+ ../../include/linus/linkage.h ../../include/linus/kernel.h \
+ ../../include/asm/io.h console_macros.h
+keyboard.o: keyboard.c ../../include/linus/types.h kbd_kern.h
+tty_io.o: tty_io.c ../../include/linus/tty.h ../../include/linus/fs.h \
+ ../../include/linus/types.h

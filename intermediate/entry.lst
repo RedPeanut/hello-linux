@@ -1,0 +1,223 @@
+     1                                  [bits 16]
+     2                                  [org 20000h]
+     3                                  
+     4                                  ;===============================================================================
+     5                                  ; DECLARE MACROs
+     6                                  ;===============================================================================
+     7                                  %macro LGDT16 1				; load from ds segment area
+     8                                  		db	3eh
+     9                                  		db	67h
+    10                                  		db	0fh
+    11                                  		db	01h
+    12                                  		db	15h
+    13                                  		dd	%1 ; addr
+    14                                  %endmacro
+    15                                  
+    16                                  %macro FJMP16 2
+    17                                  		db	66h
+    18                                  		db	0eah
+    19                                  		dd	%2 ; offset
+    20                                  		dw	%1 ; selector
+    21                                  %endmacro
+    22                                  
+    23                                  ;===============================================================================
+    24                                  ; DECLARE DEFs
+    25                                  ;===============================================================================
+    26                                  %define LDRSEG	02000h
+    27                                  %define LDRADDR	20000h
+    28                                  
+    29                                  ;===============================================================================
+    30                                  ; EntryPoint called by bootsect.
+    31                                  ;===============================================================================
+    32                                  EntryPoint16:
+    33                                  		LGDT16	_m_GdtrDesc-20000h
+    34 00000000 3E                  <1>  db 3eh
+    35 00000001 67                  <1>  db 67h
+    36 00000002 0F                  <1>  db 0fh
+    37 00000003 01                  <1>  db 01h
+    38 00000004 15                  <1>  db 15h
+    39 00000005 [3C00FEFF]          <1>  dd %1
+    40 00000009 FA                      		cli
+    41 0000000A 0F20C0                  		mov		eax, cr0
+    42 0000000D 0D0100                  		or		ax, 1
+    43 00000010 0F22C0                  		mov		cr0, eax
+    44 00000013 EB00                    		jmp		$+2
+    45 00000015 90                      		nop
+    46 00000016 90                      		nop
+    47                                  		
+    48                                  		FJMP16	08h, EntryPoint32
+    49 00000017 66                  <1>  db 66h
+    50 00000018 EA                  <1>  db 0eah
+    51 00000019 [1F000000]          <1>  dd %2
+    52 0000001D 0800                <1>  dw %1
+    53                                  
+    54                                  [bits 32]
+    55                                  ;===============================================================================
+    56                                  ; 32bit routine
+    57                                  ;===============================================================================
+    58                                  EntryPoint32:
+    59 0000001F 66B81000                		mov		ax, 10h
+    60 00000023 8ED8                     		mov		ds, ax
+    61 00000025 8EC0                     		mov		es, ax
+    62 00000027 8EE0                     		mov		fs, ax
+    63 00000029 8EE8                     		mov		gs, ax
+    64 0000002B 8ED0                     		mov		ss, ax
+    65 0000002D BCFFFF0100               		mov		esp, 1ffffh		; top of stack
+    66                                  
+    67 00000032 EA000202000800          		jmp		dword 08h:20200h ; call	 startup_32
+    68                                  
+    69                                  infinate:
+    70 00000039 F4                      		hlt
+    71 0000003A EBFD                    		jmp	infinate
+    72                                  		
+    73                                  ;===============================================================================
+    74                                  ; GDT table descriptor
+    75                                  ;===============================================================================
+    76                                  
+    77                                  _m_GdtrDesc:
+    78 0000003C 4F00                    		dw		GDT_SIZE-1
+    79 0000003E [42000000]              		dd		_m_GdtTable
+    80                                  
+    81                                  ;===============================================================================
+    82                                  ; GDT table
+    83                                  ;===============================================================================
+    84                                  
+    85                                  _m_GdtTable:
+    86                                  ;----------------------------------
+    87                                  ; GDT TABLE INDEX #0
+    88                                  ; INDEX      : NULL SELECTOR
+    89                                  ;----------------------------------
+    90                                  nullDescriptor  equ 0x00
+    91 00000042 00000000                		dd		0
+    92 00000046 00000000                		dd		0
+    93                                  
+    94                                  ;----------------------------------
+    95                                  ; GDT TABLE INDEX #1
+    96                                  ; INDEX      : 0x0008h
+    97                                  ; TYPE       : CODE SEGMENT
+    98                                  ; RING LEVEL : 0
+    99                                  ; ATTRIBUTES : Excute/Read, Nonconforming, 4GB
+   100                                  ;----------------------------------
+   101                                  codeDescriptor  equ 0x08
+   102 0000004A FFFF                    				dw		0ffffh			; segment limit 15:00
+   103 0000004C 0000                    				dw		0000h			; base address 15:00
+   104 0000004E 00                      				db		00h				; base address 23:16
+   105 0000004F 9A                      				db		10011010b		; P | DPL | S | TYPE
+   106 00000050 CF                      				db		11001111b		; G | D/B | 0 | AVL | segment limit 19:16
+   107 00000051 00                      				db		00h				; base address 31:24
+   108                                  				
+   109                                  ;----------------------------------
+   110                                  ; GDT TABLE INDEX #2
+   111                                  ; INDEX      : 0x0010h
+   112                                  ; TYPE       : DATA SEGMENT
+   113                                  ; RING LEVEL : 0
+   114                                  ; ATTRIBUTES : Read/Write, 4GB
+   115                                  ;----------------------------------
+   116                                  dataDescriptor  equ 0x10
+   117 00000052 FFFF                    				dw		0ffffh
+   118 00000054 0000                    				dw		0000h
+   119 00000056 00                      				db		00h
+   120 00000057 92                      				db		10010010b
+   121 00000058 CF                      				db		11001111b
+   122 00000059 00                      				db		00h
+   123                                  				
+   124                                  ;----------------------------------
+   125                                  ; GDT TABLE INDEX #3
+   126                                  ; INDEX      : 0x001Bh
+   127                                  ; TYPE       : CODE SEGMENT
+   128                                  ; RING LEVEL : 3
+   129                                  ; ATTRIBUTES : Excute/Read, Nonconforming, second 1mega area
+   130                                  ;----------------------------------
+   131 0000005A FF00                    				dw		000ffh			; segment limit 15:00
+   132 0000005C 0000                    				dw		0000h			; base address 15:00
+   133 0000005E 10                      				db		10h				; base address 23:16
+   134 0000005F FA                      				db		11111010b		; P | DPL | S | TYPE
+   135 00000060 CF                      				db		11001111b		; G | D/B | 0 | AVL | segment limit 19:16
+   136 00000061 00                      				db		00h				; base address 31:24
+   137                                  				
+   138                                  ;----------------------------------
+   139                                  ; GDT TABLE INDEX #4
+   140                                  ; INDEX      : 0x0023h
+   141                                  ; TYPE       : DATA SEGMENT
+   142                                  ; RING LEVEL : 3
+   143                                  ; ATTRIBUTES : Read/Write, second 1mega area
+   144                                  ;----------------------------------
+   145 00000062 FF00                    				dw		000ffh
+   146 00000064 0000                    				dw		0000h
+   147 00000066 10                      				db		10h
+   148 00000067 F2                      				db		11110010b
+   149 00000068 CF                      				db		11001111b
+   150 00000069 00                      				db		00h
+   151                                  				
+   152                                  ;----------------------------------
+   153                                  ; GDT TABLE INDEX #5
+   154                                  ; INDEX      : 0x0028h
+   155                                  ; TYPE       : 32-Bit TSS
+   156                                  ; RING LEVEL : 0
+   157                                  ; DESC       : used by tmr_task_gate
+   158                                  ;----------------------------------
+   159 0000006A 6700                    				dw		0067h				; segment limit 15:00
+   160 0000006C 0000                    				dw		0000h				; base address 15:00
+   161 0000006E 00                      				db		00h					; base address 23:16
+   162 0000006F 89                      				db		10001001b			; P | DPL | 0 | TYPE
+   163 00000070 00                      				db		00000000b			; G | 0 | 0 | AVL | limit 19:16
+   164 00000071 00                      				db		00h					; base address 31:24
+   165                                  
+   166                                  ;----------------------------------
+   167                                  ; GDT TABLE INDEX #6
+   168                                  ; INDEX      : 0x0030h
+   169                                  ; TYPE       : 32-Bit TSS
+   170                                  ; RING LEVEL : 0
+   171                                  ; DESC       : used during system initialization
+   172                                  ;----------------------------------
+   173 00000072 6700                    				dw		0067h				; segment limit 15:00
+   174 00000074 0000                    				dw		0000h				; base address 15:00
+   175 00000076 00                      				db		00h					; base address 23:16
+   176 00000077 89                      				db		10001001b			; P | DPL | 0 | TYPE
+   177 00000078 00                      				db		00000000b			; G | 0 | 0 | AVL | limit 19:16
+   178 00000079 00                      				db		00h					; base address 31:24
+   179                                  				
+   180                                  ;----------------------------------
+   181                                  ; GDT TABLE INDEX #7
+   182                                  ; INDEX      : 0x0038h
+   183                                  ; TYPE       : 32-Bit TSS
+   184                                  ; RING LEVEL : 0
+   185                                  ; DESC       : called whenever the system timer generates an interrupt
+   186                                  ;----------------------------------
+   187 0000007A 6700                    				dw		0067h				; segment limit 15:00
+   188 0000007C 0000                    				dw		0000h				; base address 15:00
+   189 0000007E 00                      				db		00h					; base address 23:16
+   190 0000007F 89                      				db		10001001b			; P | DPL | 0 | TYPE
+   191 00000080 00                      				db		00000000b			; G | 0 | 0 | AVL | limit 19:16
+   192 00000081 00                      				db		00h					; base address 31:24
+   193                                  				
+   194                                  ;----------------------------------
+   195                                  ; GDT TABLE INDEX #8
+   196                                  ; INDEX      : 0x0040h
+   197                                  ; TYPE       : 32-Bit TSS
+   198                                  ; RING LEVEL : 0
+   199                                  ; DESC       : soft-task-switch. when any thread wants to task-swithing, call this.
+   200                                  ;----------------------------------
+   201 00000082 6700                    				dw		0067h				; segment limit 15:00
+   202 00000084 0000                    				dw		0000h				; base address 15:00
+   203 00000086 00                      				db		00h					; base address 23:16
+   204 00000087 89                      				db		10001001b			; P | DPL | 0 | TYPE
+   205 00000088 00                      				db		00000000b			; G | 0 | 0 | AVL | limit 19:16
+   206 00000089 00                      				db		00h					; base address 31:24
+   207                                  				
+   208                                  ;----------------------------------
+   209                                  ; GDT TABLE INDEX #9
+   210                                  ; INDEX      : 0x0048h
+   211                                  ; TYPE       : 32-Bit TSS
+   212                                  ; RING LEVEL : 0
+   213                                  ; DESC       : call-gate for syscall
+   214                                  ;----------------------------------
+   215 0000008A 0000                    				dw		0000h				; offset 15:00
+   216 0000008C 0000                    				dw		0000h				; selector
+   217 0000008E 01                      				db		01h					; dword count = 1 (4bytes)
+   218 0000008F EC                      				db		11101100b			; P, DPL=3, S=0, TYPE=1100
+   219 00000090 0000                    				dw		0000h				; offset 31:16
+   220                                  
+   221                                  GDT_SIZE	equ	$ - _m_GdtTable		; Size, in bytes
+   222                                  
+   223 00000092 00<rept>                times	512-($-$$)	db	00h

@@ -1,0 +1,6 @@
+devices.o: devices.c ../include/linus/fs.h ../include/linus/types.h \
+ ../include/linus/major.h ../include/linus/string.h \
+ ../include/linus/stddef.h ../include/linus/errno.h
+exec.o: exec.c ../include/linus/linkage.h ../include/linus/ptrace.h
+namei.o: namei.c
+open.o: open.c ../include/linus/linkage.h

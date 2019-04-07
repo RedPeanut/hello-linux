@@ -1,0 +1,3 @@
+kmalloc.o: kmalloc.c ../include/linus/types.h
+memory.o: memory.c ../include/linus/types.h
+swap.o: swap.c ../include/linus/mm.h
