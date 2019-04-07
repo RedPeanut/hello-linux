@@ -1,3 +1,12 @@
+2019.04.07 백업용 및 외부전시용. github에 올려둠
+
+2013.12.09 0.3.2에서 한번 끊기
+2013.12.08 - 너무 오래 만지고 있어 0.3.2로 승격
+- context switching 성공
+
+2013.11.19 드디어 trap(exception+interrupt handler) 설치
+
+2013.08.23 software context switching 까지 해보기
 2013.06.30 inode, buffer_head, super_block, 등등에 대한 개념정립이 필요하다. 그리고나서 동작을 copy해야한다. 기계적인 타이핑으로는 이해가 되지 않는다. 
 2013.06.26 페이징을 하려다 보니, 0x1000, 0x2000,... 위치에 page directory entry, page table entry를 기재하여다 보니, 이미지 올라가는 위치를 조정해야 하고, 이미지 올라가는 위치를 조정하려다 보니, bootsect에서 로딩하는 이미지를 판단해야하고, 이를 위해 linux의 build.c를 갖고와 고쳐 쓰려고 하는데... 구조변경이 심하여 0.3.0으로 버전업~
 2013.06.06 os이름, linus어때? ㅎ
